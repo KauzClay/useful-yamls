@@ -1,0 +1,106 @@
+---
+apiVersion: kappctrl.k14s.io/v1alpha1
+kind: App
+metadata:
+  name: serving
+  namespace: default
+  annotations:
+    kapp.k14s.io/change-group: serving
+    kapp.k14s.io/change-rule.create-order: "upsert after upserting rbac" 
+    kapp.k14s.io/change-rule.delete-order: "delete before deleting rbac"
+spec:
+  serviceAccountName: admin-sa
+  syncPeriod: 1m
+  fetch:
+    - http:
+        url: https://github.com/knative/serving/releases/download/knative-v1.7.2/serving-crds.yaml
+    - http:
+        url: https://github.com/knative/serving/releases/download/knative-v1.7.2/serving-core.yaml
+    - http:
+        url: https://github.com/knative/net-contour/releases/download/knative-v1.7.0/contour.yaml
+    - http:
+        url: https://github.com/knative/net-contour/releases/download/knative-v1.7.0/net-contour.yaml
+  template:
+    - ytt:
+        ignoreUnknownComments: true
+        inline:
+            paths:
+              overlay-ingress-provider.yaml: |
+                #@ load("@ytt:overlay", "overlay")
+                #@overlay/match by=overlay.subset({"kind": "ConfigMap","metadata":{"name":"config-network","namespace":"knative-serving"}})
+                ---
+                data:
+                  #@overlay/match missing_ok=True
+                  ingress-class: contour.ingress.networking.knative.dev
+              overlay-config-contour.yaml: |
+                #@load("@ytt:overlay", "overlay")
+                #@def visibility():
+                #@    return {
+                #@      "ExternalIP": {
+                #@        "class": "contour",
+                #@        "service": "{}/envoy".format("project-contour")
+                #@      },
+                #@      "ClusterLocal": {
+                #@        "class": "contour",
+                #@        "service": "{}/envoy".format("project-contour")
+                #@      },
+                #@    }
+                #@end
+
+                #@overlay/match by=overlay.subset({"kind": "ConfigMap","metadata":{"name":"config-contour","namespace":"knative-serving"}})
+                ---
+                data:
+                  #@overlay/match missing_ok=True
+                  visibility: #@ yaml.encode(visibility())
+
+              overlay-contour-certgen-job.yaml: |
+                #@ load("@ytt:overlay", "overlay")
+                #@ load("@ytt:data", "data")
+
+                #@ is_job= overlay.subset({"kind":"Job"})
+                #@ is_certgen= lambda indexOrKey, left, right: left["metadata"]["name"].startswith("contour-certgen")
+                #@overlay/match by=overlay.and_op(is_job,is_certgen), expects=2
+                ---
+                spec:
+                  #@overlay/remove
+                  ttlSecondsAfterFinished: 0
+
+                #@overlay/match by=overlay.subset({"kind": "Job", "metadata": {"namespace": "contour-internal"}}),missing_ok=True
+                #@overlay/match-child-defaults missing_ok=True
+                ---
+                metadata:
+                  annotations:
+                    kapp.k14s.io/disable-wait: ""
+                    kapp.k14s.io/update-strategy: always-replace
+
+                #@overlay/match by=overlay.subset({"kind": "Job", "metadata": {"namespace": "contour-external"}}),missing_ok=True
+                #@overlay/match-child-defaults missing_ok=True
+                ---
+                metadata:
+                  annotations:
+                    kapp.k14s.io/disable-wait: ""
+                    kapp.k14s.io/update-strategy: always-replace
+  deploy:
+    - kapp: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-sa
+  annotations:
+    kapp.k14s.io/change-group: rbac
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-sa
+  annotations:
+    kapp.k14s.io/change-group: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: admin-sa
+    namespace: kube-system

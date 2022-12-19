@@ -1,0 +1,12 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: DomainMapping
+metadata:
+  name: hello.clay.tanzu.biz
+  namespace: default
+spec:
+  ref:
+    name: hello
+    kind: Service
+    apiVersion: serving.knative.dev/v1
+  tls:
+    secretName: oauth-test-tls

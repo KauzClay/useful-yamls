@@ -1,0 +1,7 @@
+---
+apiVersion: networking.internal.knative.dev/v1alpha1
+kind: ClusterDomainClaim
+metadata:
+  name: hello.clay.tanzu.biz
+spec:
+  namespace: default

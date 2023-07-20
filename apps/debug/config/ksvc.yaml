@@ -1,0 +1,18 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+ name: debug
+ namespace: default
+ annotations:
+  networking.knative.dev/ingress-class: istio.ingress.networking.knative.dev
+spec:
+ template:
+  metadata:
+   annotations:
+    networking.knative.dev/ingress-class: istio.ingress.networking.knative.dev
+  spec:
+   containers:
+   - image: ko://examples/debug
+     env:
+     - name: MY_VAR
+       value: "test"

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: debug
+  name: debug
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debug
+  template:
+    metadata:
+      labels:
+        app: debug
+    spec:
+      containers:
+      - image: ko://examples/debug
+        name: debug
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MY_VAR
+          value: "test"
+        - name: REQUEST_URL
+          value: "http://blue.default.tanzu.biz/env"
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: debug
+  name: debug
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: debug
+  sessionAffinity: None
+  type: ClusterIP
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: debug
+#   labels:
+#     app: debug
+# spec:
+#   defaultBackend:
+#     service:
+#       name: debug
+#       port:
+#         number: 80

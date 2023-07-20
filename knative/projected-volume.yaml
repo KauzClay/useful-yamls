@@ -1,0 +1,31 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+ name: hello
+ namespace: default
+spec:
+ template:
+  spec:
+   volumes:
+   - name: all-in-one
+     projected:
+       sources:
+       - secret:
+           name: username
+           items:
+             - key: username
+               path: my-group/my-username
+       - secret:
+           name: password
+           items:
+             - key: password
+               path: my-group/my-password
+   containers:
+    - image: gcr.io/knative-samples/helloworld-go
+      env:
+        - name: TARGET
+          value: "my friends"
+      volumeMounts:
+      - name: all-in-one
+        mountPath: "/projected-volume"
+        readOnly: true

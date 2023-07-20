@@ -1,0 +1,15 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+ name: hello-kourier
+ namespace: default
+ annotations:
+   networking.knative.dev/ingress-class: kourier.ingress.networking.knative.dev
+spec:
+ template:
+  spec:
+   containers:
+    - image: gcr.io/knative-samples/helloworld-go
+      env:
+        - name: TARGET
+          value: "this is kourier"

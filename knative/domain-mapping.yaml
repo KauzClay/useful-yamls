@@ -1,0 +1,20 @@
+---
+apiVersion: networking.internal.knative.dev/v1alpha1
+kind: ClusterDomainClaim
+metadata:
+  name: app.claytest.tanzu.biz
+spec:
+  namespace: default
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: DomainMapping
+metadata:
+  name: app.claytest.tanzu.biz
+  namespace: default
+spec:
+  ref:
+    name: carrot
+    kind: Service
+    apiVersion: serving.knative.dev/v1
+  tls:
+    secretName: test-cert

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: green
+  name: green
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: green
+  template:
+    metadata:
+      labels:
+        app: green
+    spec:
+      containers:
+      - image: ko://examples/debug
+        name: debug
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MY_VAR
+          value: "green"
+        - name: REQUEST_URL
+          value: "http://blue.default.tanzu.biz/env"
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: green
+  name: green
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: green
+  sessionAffinity: None
+  type: ClusterIP
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: green
+#   labels:
+#     app: green
+# spec:
+#   defaultBackend:
+#     service:
+#       name: green
+#       port:
+#         number: 80

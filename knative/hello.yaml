@@ -10,4 +10,4 @@ spec:
     - image: gcr.io/knative-samples/helloworld-go
       env:
         - name: TARGET
-          value: "Contour folks"
+          value: "my friends"

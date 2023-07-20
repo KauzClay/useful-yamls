@@ -1,7 +1,0 @@
----
-domain_name: kauz.tanzu.biz
-ingress:
-  external:
-    namespace: tanzu-system-ingress
-  internal:
-    namespace: tanzu-system-ingress

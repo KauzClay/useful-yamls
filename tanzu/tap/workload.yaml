@@ -1,0 +1,16 @@
+---
+apiVersion: carto.run/v1alpha1
+kind: Workload
+metadata:
+  labels:
+    apps.tanzu.vmware.com/carvel-package-workflow: "true"
+    apps.tanzu.vmware.com/workload-type: server
+  name: hello
+  namespace: default
+spec:
+  image: gcr.io/knative-samples/helloworld-go
+  params:
+  - name: carvel_package_gitops_subpath
+    value: tanzu/tap/gitops
+  - name: carvel_package_name_suffix
+    value: kauz

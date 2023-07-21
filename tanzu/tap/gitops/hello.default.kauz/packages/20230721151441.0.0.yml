@@ -1,0 +1,25 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: hello.default.kauz.20230721151441.0.0
+spec:
+  refName: hello.default.kauz
+  version: 20230721151441.0.0
+  releaseNotes: |
+    Release v20230721151441.0.0 of package hello.default.kauz
+  template:
+    spec:
+      fetch:
+      - imgpkgBundle:
+          image: ckauzlaric.azurecr.io/apps/workloads/hello-default-bundle@sha256:96a3a1e7268077f03305bbc29e85d8be57e5436e8f70e8a45f203e04a0dcdeb4
+      template:
+      - ytt:
+          paths:
+          - .
+      - kbld:
+          paths:
+          - .imgpkg/images.yml
+          - '-'
+      deploy:
+      - kapp: {}
+

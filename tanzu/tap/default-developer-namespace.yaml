@@ -21,6 +21,7 @@ imagePullSecrets:
   - name: registry-credentials
   - name: azure-registry-credentials
   - name: tap-registry
+  - name: tap-clay
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

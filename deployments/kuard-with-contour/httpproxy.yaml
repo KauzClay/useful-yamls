@@ -1,0 +1,14 @@
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: basic
+spec:
+  virtualhost:
+    fqdn: 35.199.70.148.nip.io
+  routes:
+    - conditions:
+      - prefix: /
+      services:
+        - name: kuard
+          port: 80

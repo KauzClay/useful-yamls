@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cat <<EOT | ytt -f - --data-value name="$1" --data-value namespace="${2}" |  kubectl apply -f -
+cat <<EOT | ytt -f - --data-value name="$1" --data-value namespace="${2:-default}" |  kubectl apply -f -
 #@ load("@ytt:data", "data")
 
 apiVersion: serving.knative.dev/v1
